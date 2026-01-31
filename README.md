@@ -191,7 +191,7 @@ We welcome contributions! If you find issues with specific city data or have sug
 
 For questions or collaboration inquiries, please:
 - Open an issue on this repository
-- Contact: [Your Email]
+- Contact: xlin0541@outlook.com
 
 ---
 
