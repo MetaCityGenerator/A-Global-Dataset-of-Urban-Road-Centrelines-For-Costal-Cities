@@ -1,4 +1,4 @@
-# 🌍 A Global Dataset of Urban Road Centrelines for 1000+ Coastal Cities
+# 🌍 A Global Dataset of Urban Road Centrelines for 2000+ Coastal Cities
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Dataset](https://img.shields.io/badge/Dataset-Google%20Drive-4285F4?logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1fjjiuFC3kgiojk5mqKITHmYBqh3BZQ1t?usp=sharing)
@@ -17,7 +17,7 @@ Coastal cities, home to **over 40% of the global population**, require accurate 
 
 **The Problem:** When a four-lane road is represented as four separate lines, spatial analyses such as space syntax and centrality calculations incorrectly count it four times, significantly **distorting measurements of urban spatial structure**.
 
-**Our Solution:** We present a comprehensive dataset of **unified road centrelines for 1,437 coastal cities across 124 countries**, automatically extracted using Voronoi tessellation combined with adaptive spatial partitioning.
+**Our Solution:** We present a comprehensive dataset of **unified road centrelines for 2,588 coastal cities across 124 countries**, automatically extracted using Voronoi tessellation combined with adaptive spatial partitioning.
 
 ---
 
