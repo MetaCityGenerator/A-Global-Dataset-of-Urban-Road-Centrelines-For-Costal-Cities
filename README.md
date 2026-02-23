@@ -40,7 +40,7 @@ Coastal cities, home to **over 40% of the global population**, require accurate 
 - **🚀 High Performance**: Processes complex urban networks (7,000+ segments) in ~2 minutes vs 4.5 hours for conventional approaches
 - **✅ Validated Quality**: Strong correlation (R² > 0.85) with manually-drawn axial maps
 - **📊 GeoParquet Format**: Efficient columnar storage (EPSG:4326), ~9.6M km total road length, ~42M road segments globally
-- **🔗 Full Traceability**: Original OSM IDs preserved for source verification
+- **🔗 Full Traceability**: Raw Overture data includes `id` for source verification; spatial join for attribute enrichment
 - **🌍 Global Coverage**: 110 countries across all inhabited continents
 
 ---
@@ -51,32 +51,40 @@ The dataset uses a **flat layout** with GeoParquet files:
 
 ```
 centroidline_update/data/output/
-├── raw_road_networks/              # Original OSM multi-lane roads
-│   ├── {Country}_{City}_roads.parquet
+├── raw_road_networks/              # Original Overture road network data
+│   ├── {Country}_{CityName}_roads.parquet
 │   └── ...
 └── centerline_road_networks/       # Extracted centerlines
-    ├── {Country}_{City}_centerline.parquet
+    ├── {CityName}_Road Network_2024.parquet
     └── ...
 ```
 
-Example file names: `China_Shanghai_centerline.parquet`, `Indonesia_Jakarta_centerline.parquet`
+All geometries are stored in WGS84 (EPSG:4326) as LineString features.
 
 ---
 
 ## 📋 Data Attributes
 
-### Road Segment Properties (GeoParquet)
+### 3.3 Centerline Data
+
+The centreline files follow the naming pattern `{Country}_{CityName}_centerline.parquet`. The attribute schema is **intentionally minimal** to maximize compatibility and minimize file size:
 
 | Attribute | Description |
 |-----------|-------------|
-| `segment_id` | Unique identifier for each centreline segment |
-| `original_osm_id` | OpenStreetMap way ID for traceability |
-| `road_name` | Local road name (UTF-8 encoded) |
-| `road_type` | OSM highway classification (motorway, primary, secondary, etc.) |
-| `length_meters` | Geometric length of the centreline segment |
-| `width_estimated` | Estimated road width from buffer analysis |
-| `extraction_date` | Processing date |
-| `source_version` | OSM data timestamp |
+| `geometry` | The spatial representation of the road segment as a LineString in WGS84 coordinates |
+
+This streamlined schema allows users to compute derived attributes (segment length, orientation, connectivity metrics) using standard GIS operations, while keeping the dataset compact. Users requiring additional road attributes (road type, name, speed limit) can perform spatial joins with Overture data using the geometry field.
+
+### 3.4 Raw Overture Data
+
+The raw road network data for each city is stored as `{Country}_{CityName}_roads.parquet`, enabling comparison with processed centreline representations or access to attributes not preserved in centreline extraction. Key attributes include:
+
+| Attribute | Description |
+|-----------|-------------|
+| `id` | Overture feature identifier enabling traceability to source data |
+| `subtype` | Feature type classification (road, rail, water) |
+| `class` | Road functional classification (motorway, primary, secondary, tertiary, residential, etc.) |
+| `geometry` | Spatial representation as LineString or MultiLineString in WGS84 coordinates |
 
 ### Global Statistics (this release)
 
@@ -118,11 +126,13 @@ Our approach employs **Voronoi tessellation** to identify the geometric center o
 import geopandas as gpd
 
 # Load road centrelines for a specific city (GeoParquet format)
-roads = gpd.read_parquet("centerline_road_networks/China_Shanghai_centerline.parquet")
+# File naming: {CityName}_Road Network_2024.parquet
+roads = gpd.read_parquet("centerline_road_networks/Shanghai_Road Network_2024.parquet")
 
-# Basic statistics
+# Basic statistics (geometry-only schema; compute length from geometry)
+roads["length_m"] = roads.geometry.length
 print(f"Total segments: {len(roads)}")
-print(f"Total length: {roads.geometry.length.sum()/1000:.2f} km")
+print(f"Total length: {roads['length_m'].sum()/1000:.2f} km")
 
 # Visualize
 roads.plot(figsize=(12, 12), linewidth=0.5)
@@ -132,7 +142,7 @@ roads.plot(figsize=(12, 12), linewidth=0.5)
 
 1. Open QGIS
 2. Drag and drop the `.parquet` file into the map canvas (or use Layer → Add Layer → Add Vector Layer)
-3. Style using `road_type` for categorical visualization
+3. For centreline data: single geometry layer; for raw data: style using `class` for categorical visualization
 
 ### Network Analysis
 
@@ -142,7 +152,7 @@ Convert GeoParquet to a graph for network analysis (e.g., using `geopandas` + `n
 import geopandas as gpd
 import momepy
 
-roads = gpd.read_parquet("centerline_road_networks/China_Shanghai_centerline.parquet")
+roads = gpd.read_parquet("centerline_road_networks/Shanghai_Road Network_2024.parquet")
 G = momepy.gdf_to_nx(roads)
 # Calculate centrality measures, etc.
 ```
