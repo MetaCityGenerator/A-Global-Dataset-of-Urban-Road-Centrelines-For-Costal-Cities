@@ -2,8 +2,8 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Dataset](https://img.shields.io/badge/Dataset-Google%20Drive-4285F4?logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1fjjiuFC3kgiojk5mqKITHmYBqh3BZQ1t?usp=sharing)
-[![Cities](https://img.shields.io/badge/Cities-1%2C437-brightgreen)](.)
-[![Countries](https://img.shields.io/badge/Countries-124-blue)](.)
+[![Cities](https://img.shields.io/badge/Cities-2%2C588-brightgreen)](.)
+[![Countries](https://img.shields.io/badge/Countries-110-blue)](.)
 
 > **Unified road centrelines for spatial analysis** — Transforming traffic-oriented road networks into spatially-coherent centreline representations using Voronoi tessellation.
 
@@ -17,7 +17,7 @@ Coastal cities, home to **over 40% of the global population**, require accurate 
 
 **The Problem:** When a four-lane road is represented as four separate lines, spatial analyses such as space syntax and centrality calculations incorrectly count it four times, significantly **distorting measurements of urban spatial structure**.
 
-**Our Solution:** We present a comprehensive dataset of **unified road centrelines for 2,588 coastal cities across 124 countries**, automatically extracted using Voronoi tessellation combined with adaptive spatial partitioning.
+**Our Solution:** We present a comprehensive dataset of **unified road centrelines for 2,588 coastal cities across 110 countries**, automatically extracted using Voronoi tessellation combined with adaptive spatial partitioning.
 
 ---
 
@@ -25,13 +25,13 @@ Coastal cities, home to **over 40% of the global population**, require accurate 
 
 | Continent | Number of Cities |
 |-----------|------------------|
-| 🌏 Asia | 578 |
-| 🌍 Europe | 312 |
-| 🌎 North America | 234 |
-| 🌍 Africa | 156 |
-| 🌎 South America | 108 |
-| 🌏 Oceania | 49 |
-| **Total** | **1,437** |
+| 🌏 Asia | 1,189 |
+| 🌍 Europe | 357 |
+| 🌎 North America | 364 |
+| 🌍 Africa | 312 |
+| 🌎 South America | 256 |
+| 🌏 Oceania | 110 |
+| **Total** | **2,588** |
 
 ---
 
@@ -39,39 +39,33 @@ Coastal cities, home to **over 40% of the global population**, require accurate 
 
 - **🚀 High Performance**: Processes complex urban networks (7,000+ segments) in ~2 minutes vs 4.5 hours for conventional approaches
 - **✅ Validated Quality**: Strong correlation (R² > 0.85) with manually-drawn axial maps
-- **📊 Multiple Formats**: GeoJSON, GeoParquet, GraphML, and ESRI Shapefile
+- **📊 GeoParquet Format**: Efficient columnar storage (EPSG:4326), ~9.6M km total road length, ~42M road segments globally
 - **🔗 Full Traceability**: Original OSM IDs preserved for source verification
-- **🌍 Global Coverage**: 124 countries across all inhabited continents
+- **🌍 Global Coverage**: 110 countries across all inhabited continents
 
 ---
 
 ## 📁 Dataset Structure
 
+The dataset uses a **flat layout** with GeoParquet files:
+
 ```
-├── Asia/
-│   ├── China/
-│   │   ├── CHN_Shanghai_RoadCenterlines.geojson
-│   │   ├── CHN_Shanghai_RoadCenterlines.graphml
-│   │   └── CHN_Shanghai_metadata.json
+centroidline_update/data/output/
+├── raw_road_networks/              # Original OSM multi-lane roads
+│   ├── {Country}_{City}_roads.parquet
 │   └── ...
-├── Europe/
-│   └── ...
-├── North_America/
-│   └── ...
-├── Africa/
-│   └── ...
-├── South_America/
-│   └── ...
-├── Oceania/
-│   └── ...
-└── global_statistics.csv
+└── centerline_road_networks/       # Extracted centerlines
+    ├── {Country}_{City}_centerline.parquet
+    └── ...
 ```
+
+Example file names: `China_Shanghai_centerline.parquet`, `Indonesia_Jakarta_centerline.parquet`
 
 ---
 
 ## 📋 Data Attributes
 
-### Road Segment Properties
+### Road Segment Properties (GeoParquet)
 
 | Attribute | Description |
 |-----------|-------------|
@@ -84,14 +78,15 @@ Coastal cities, home to **over 40% of the global population**, require accurate 
 | `extraction_date` | Processing date |
 | `source_version` | OSM data timestamp |
 
-### Network Topology (GraphML)
+### Global Statistics (this release)
 
-| Node Attributes | Description |
-|-----------------|-------------|
-| `node_id` | Unique identifier |
-| `longitude`, `latitude` | Geographic coordinates |
-| `degree` | Number of connected road segments |
-| `node_type` | intersection / endpoint / pseudo-node |
+| Metric | Value |
+|--------|-------|
+| Total cities | 2,588 |
+| Total road length | ~9,639,041 km |
+| Total road segments | ~42,097,693 |
+| Avg. length preservation rate | 73.53% |
+| Avg. road length per city | ~3,725 km |
 
 ---
 
@@ -122,12 +117,12 @@ Our approach employs **Voronoi tessellation** to identify the geometric center o
 ```python
 import geopandas as gpd
 
-# Load road centrelines for a specific city
-roads = gpd.read_file("Asia/China/CHN_Shanghai_RoadCenterlines.geojson")
+# Load road centrelines for a specific city (GeoParquet format)
+roads = gpd.read_parquet("centerline_road_networks/China_Shanghai_centerline.parquet")
 
 # Basic statistics
 print(f"Total segments: {len(roads)}")
-print(f"Total length: {roads['length_meters'].sum()/1000:.2f} km")
+print(f"Total length: {roads.geometry.length.sum()/1000:.2f} km")
 
 # Visualize
 roads.plot(figsize=(12, 12), linewidth=0.5)
@@ -136,20 +131,20 @@ roads.plot(figsize=(12, 12), linewidth=0.5)
 ### QGIS
 
 1. Open QGIS
-2. Drag and drop the `.geojson` file into the map canvas
+2. Drag and drop the `.parquet` file into the map canvas (or use Layer → Add Layer → Add Vector Layer)
 3. Style using `road_type` for categorical visualization
 
-### Network Analysis (NetworkX)
+### Network Analysis
+
+Convert GeoParquet to a graph for network analysis (e.g., using `geopandas` + `networkx` or `momepy`):
 
 ```python
-import networkx as nx
+import geopandas as gpd
+import momepy
 
-# Load network topology
-G = nx.read_graphml("Asia/China/CHN_Shanghai_RoadCenterlines.graphml")
-
-# Calculate centrality measures
-betweenness = nx.betweenness_centrality(G)
-closeness = nx.closeness_centrality(G)
+roads = gpd.read_parquet("centerline_road_networks/China_Shanghai_centerline.parquet")
+G = momepy.gdf_to_nx(roads)
+# Calculate centrality measures, etc.
 ```
 
 ---
