@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="extractLine/extractLine.csproj" />
+  <Project Path="MetaCity/MetaCity.csproj" />
+</Solution>

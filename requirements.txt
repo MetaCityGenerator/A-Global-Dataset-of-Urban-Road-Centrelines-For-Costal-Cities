@@ -1,0 +1,11 @@
+# Python dependencies for the batch driver (execute/main.py).
+# The extraction engine itself is C# / .NET 8 — see extractCentroidLine_csharp/.
+# (Tested with Python 3.10/3.11.)
+
+geopandas>=1.0
+pyogrio>=0.9     # fast GeoParquet / GeoJSON I/O (GDAL-backed)
+shapely>=2.0
+pyproj>=3.6
+pandas>=2.0
+numpy>=1.24
+pyarrow>=15.0    # GeoParquet read/write
