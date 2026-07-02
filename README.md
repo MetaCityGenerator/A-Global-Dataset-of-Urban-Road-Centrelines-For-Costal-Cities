@@ -48,7 +48,7 @@ across 110 countries**.
 
 ## 📥 Download
 
-The full dataset (raw + centreline GeoParquet for all 2,073 cities) is on **figshare**:
+The full dataset (raw + centreline GeoParquet and GeoPackage for all 2,073 cities) is on **figshare**:
 
 ### 🔗 [https://doi.org/10.6084/m9.figshare.31696105](https://doi.org/10.6084/m9.figshare.31696105)
 
